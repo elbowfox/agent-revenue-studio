@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LeadBrief — one-page company brief</title>
+  <style>
+    body { margin:0; font-family:ui-sans-serif,system-ui,sans-serif; background:#0b1020; color:#e8ecf7; }
+    main { max-width:720px; margin:auto; padding:32px 20px; }
+    h1 { margin:0 0 8px; }
+    p { color:#9aa3b8; }
+    input, textarea { width:100%; padding:12px; border-radius:10px; border:1px solid #2a3350; background:#0e1426; color:#e8ecf7; }
+    button { margin-top:12px; background:#7c5cff; color:#fff; border:0; padding:12px 16px; border-radius:12px; font-weight:700; }
+    pre { background:#141a2e; padding:16px; border-radius:12px; white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>LeadBrief</h1>
+  <p>Paste what you know. Get a one-page brief a human can send before a call. Price test: $0.99 / brief after 3 free.</p>
+  <p><input id="co" placeholder="Company name" /></p>
+  <p><input id="url" placeholder="Website URL" /></p>
+  <p><textarea id="notes" rows="6" placeholder="Paste homepage text, LinkedIn about, job posts, or call notes."></textarea></p>
+  <button onclick="go()">Generate brief</button>
+  <pre id="out"></pre>
+</main>
+<script>
+const FREE = 3;
+function n(){ return Number(localStorage.getItem('lb')||0); }
+function go(){
+  if (n()>=FREE && !localStorage.getItem('lb_paid')) {
+    document.getElementById('out').textContent = 'Free briefs used. Charge $0.99 and set localStorage.lb_paid=1 after checkout.';
+    return;
+  }
+  localStorage.setItem('lb', String(n()+1));
+  const co = document.getElementById('co').value || 'Unknown co';
+  const url = document.getElementById('url').value || '';
+  const notes = document.getElementById('notes').value || '';
+  const words = notes.toLowerCase();
+  const hooks = [];
+  if (words.includes('hiring')) hooks.push('They are hiring — timing for a tool that saves headcount hours.');
+  if (words.includes('ai')) hooks.push('They already mention AI — sell outcome, not “we also have AI”.');
+  if (words.includes('enterprise') || words.includes('security')) hooks.push('Security language present — lead with SOC2 / data handling.');
+  document.getElementById('out').textContent = `# ${co} brief\nURL: ${url}\n\n## Snapshot\n${notes ? notes.slice(0, 400) : 'No source text. Paste homepage copy next time.'}\n\n## Likely pain\n- Manual work hiding in a workflow they already describe\n- Slow follow-up if they generate inbound leads\n\n## Angle for the first email\n${hooks[0] || 'Lead with one saved hour per rep per day, not features.'}\n\n## 3 questions for the call\n1. Who owns this workflow today?\n2. What happens when it fails?\n3. What would make this a yes this quarter?\n\nUsed ${n()}/${FREE} free briefs.`;
+}
+</script>
+</body>
+</html>

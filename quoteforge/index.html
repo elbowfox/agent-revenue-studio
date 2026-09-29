@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuoteForge — invoices and proposals in 60 seconds</title>
+  <style>
+    :root { --bg:#0b1020; --card:#141a2e; --ink:#e8ecf7; --muted:#9aa3b8; --acc:#7c5cff; --ok:#3dd68c; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+    header { padding:28px 20px 8px; max-width:960px; margin:auto; }
+    h1 { margin:0 0 6px; font-size:28px; }
+    p.sub { color:var(--muted); margin:0 0 20px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; max-width:960px; margin:auto; padding:0 20px 40px; }
+    @media (max-width:800px){ .grid { grid-template-columns:1fr; } }
+    .card { background:var(--card); border-radius:16px; padding:16px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+    input, textarea, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #2a3350; background:#0e1426; color:var(--ink); }
+    textarea { min-height:72px; }
+    button { background:var(--acc); color:white; border:0; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer; margin-top:12px; }
+    button.ghost { background:transparent; border:1px solid #3a4568; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th, td { text-align:left; padding:8px 4px; border-bottom:1px solid #2a3350; }
+    .preview { background:white; color:#111; border-radius:8px; padding:24px; min-height:480px; position:relative; }
+    .wm { position:absolute; inset:40% 0 auto; text-align:center; opacity:.12; font-size:48px; font-weight:900; transform:rotate(-18deg); pointer-events:none; }
+    .paid .wm { display:none; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+    footer { max-width:960px; margin:auto; padding:0 20px 40px; color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>QuoteForge</h1>
+    <p class="sub">Build a clean invoice or proposal, export PDF, get paid. Free has a watermark. $19 removes it forever.</p>
+  </header>
+  <div class="grid">
+    <div class="card">
+      <label>Document type</label>
+      <select id="type">
+        <option>Invoice</option>
+        <option>Proposal</option>
+        <option>Estimate</option>
+      </select>
+      <div class="row">
+        <div><label>From</label><input id="from" value="Acme Studio" /></div>
+        <div><label>Bill to</label><input id="to" value="Client Co." /></div>
+      </div>
+      <div class="row">
+        <div><label>Number</label><input id="num" value="INV-1042" /></div>
+        <div><label>Date</label><input id="date" type="date" /></div>
+      </div>
+      <label>Line items (description | qty | rate)</label>
+      <textarea id="items">Brand identity refresh | 1 | 2400
+Landing page design | 1 | 1800
+Revision round | 2 | 150</textarea>
+      <label>Notes / payment terms</label>
+      <textarea id="notes">Due in 14 days. Wire or card. Late fee 1.5%/mo.</textarea>
+      <label>Tax %</label>
+      <input id="tax" type="number" value="0" />
+      <button onclick="render()">Update preview</button>
+      <button class="ghost" onclick="window.print()">Print / Save PDF</button>
+      <p class="sub" style="margin-top:12px">Replace this button with your Lemon Squeezy checkout. After payment, set <code>localStorage.qf_paid=1</code>.</p>
+    </div>
+    <div class="card">
+      <div id="preview" class="preview"></div>
+    </div>
+  </div>
+  <footer>
+    QuoteForge MVP · Agent Revenue Studio · Not legal/tax advice. Test pricing; do not treat $19 as a forecast.
+  </footer>
+  <script>
+    document.getElementById('date').valueAsDate = new Date();
+    const paid = localStorage.getItem('qf_paid') === '1';
+    function parseItems(text) {
+      return text.split('\n').filter(Boolean).map(line => {
+        const [d,q,r] = line.split('|').map(s => s.trim());
+        const qty = Number(q||1), rate = Number(r||0);
+        return { d: d||'Item', qty, rate, total: qty*rate };
+      });
+    }
+    function render() {
+      const items = parseItems(document.getElementById('items').value);
+      const sub = items.reduce((s,i)=>s+i.total,0);
+      const tax = sub * (Number(document.getElementById('tax').value)||0)/100;
+      const total = sub+tax;
+      const el = document.getElementById('preview');
+      el.className = 'preview' + (paid ? ' paid' : '');
+      el.innerHTML = `
+        ${paid?'':'<div class="wm">QUOTEFORGE</div>'}
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:22px;font-weight:800">${document.getElementById('type').value}</div>
+            <div style="color:#555">${document.getElementById('num').value} · ${document.getElementById('date').value}</div>
+          </div>
+          <div style="text-align:right;font-weight:700">${document.getElementById('from').value}</div>
+        </div>
+        <p style="margin:18px 0 8px;color:#555">Bill to</p>
+        <p style="margin:0 0 18px;font-weight:700">${document.getElementById('to').value}</p>
+        <table>
+          <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+          <tbody>
+            ${items.map(i=>`<tr><td>${i.d}</td><td>${i.qty}</td><td>$${i.rate.toFixed(2)}</td><td>$${i.total.toFixed(2)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+        <p style="text-align:right;margin-top:16px">Subtotal $${sub.toFixed(2)}<br/>Tax $${tax.toFixed(2)}<br/><strong>Total $${total.toFixed(2)}</strong></p>
+        <p style="color:#555;font-size:13px;white-space:pre-wrap">${document.getElementById('notes').value}</p>
+      `;
+    }
+    render();
+  </script>
+</body>
+</html>
