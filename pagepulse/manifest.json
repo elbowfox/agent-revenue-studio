@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "PagePulse — 30-second site pulse",
+  "version": "0.1.0",
+  "description": "Quick page QA for agencies: title, meta, H1, links, images without alt, and obvious CTA gaps.",
+  "action": { "default_popup": "popup.html", "default_title": "PagePulse" },
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"]
+}

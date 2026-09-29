@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: system-ui, sans-serif; width: 320px; margin: 0; background: #0b1020; color: #e8ecf7; }
+    header { padding: 12px 14px 4px; font-weight: 800; }
+    p { margin: 0 14px 10px; color: #9aa3b8; font-size: 12px; }
+    button { margin: 0 14px 12px; width: calc(100% - 28px); padding: 10px; border: 0; border-radius: 10px; background: #7c5cff; color: white; font-weight: 700; cursor: pointer; }
+    #out { margin: 0 14px 14px; font-size: 13px; line-height: 1.45; }
+    .ok { color: #3dd68c; } .bad { color: #ff6b8a; } .warn { color: #ffd166; }
+  </style>
+</head>
+<body>
+  <header>PagePulse</header>
+  <p>Scan this tab. Free tier: 10 scans/device. Wire $9/mo later.</p>
+  <button id="scan">Scan page</button>
+  <div id="out"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
